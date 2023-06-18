@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "mssql1": {
+      "secretStore": null,
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/unity-yes/databases/DB_FootballCHCIAS",
+      "type": "mssql.azure",
+      "connectionId": "Server=tcp:unity-yes.database.windows.net",
+      "dynamicId": null
+    }
+  }
+}

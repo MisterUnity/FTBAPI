@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "mssql1": {
+      "type": "mssql",
+      "connectionId": "Server=tcp:unity-yes.database.windows.net",
+      "dynamicId": null
+    }
+  }
+}

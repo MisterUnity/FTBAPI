@@ -1,0 +1,25 @@
+{
+  "Files": [
+    {
+      "Id": "E:\\repos\\FTBAPI\\FTBAPI\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.FTBAPI.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.build.FTBAPI.props",
+      "PackagePath": "build\\FTBAPI.props"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.buildMultiTargeting.FTBAPI.props",
+      "PackagePath": "buildMultiTargeting\\FTBAPI.props"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.buildTransitive.FTBAPI.props",
+      "PackagePath": "buildTransitive\\FTBAPI.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

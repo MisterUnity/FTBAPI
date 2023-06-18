@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "Hash": "jsl7PqCTPMkY+iIkX24NKQcCBdlMEB4/VcTqgvWTRQY=",
+  "Source": "FTBAPI",
+  "BasePath": "_content/FTBAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "FTBAPI\\wwwroot",
+      "Source": "FTBAPI",
+      "ContentRoot": "E:\\repos\\FTBAPI\\FTBAPI\\wwwroot\\",
+      "BasePath": "_content/FTBAPI",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "E:\\repos\\FTBAPI\\FTBAPI\\wwwroot\\index.html",
+      "SourceId": "FTBAPI",
+      "SourceType": "Discovered",
+      "ContentRoot": "E:\\repos\\FTBAPI\\FTBAPI\\wwwroot\\",
+      "BasePath": "_content/FTBAPI",
+      "RelativePath": "index.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\index.html"
+    }
+  ]
+}
