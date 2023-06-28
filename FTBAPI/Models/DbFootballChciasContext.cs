@@ -17,10 +17,9 @@ public partial class DbFootballChciasContext : DbContext
 
     public virtual DbSet<Playerinfo> Playerinfos { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=tcp:unity-yes.database.windows.net,1433;Initial Catalog=DB_FootballCHCIAS;Persist Security Info=False;User ID=weichehuang;Password=XGC0EW20GS00U5H1_@aq;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+    public virtual DbSet<UserAuthInfo> UserAuthInfos { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("Chinese_Taiwan_Stroke_CI_AS");
@@ -51,6 +50,37 @@ public partial class DbFootballChciasContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.Position).HasMaxLength(10);
             entity.Property(e => e.Weight).HasMaxLength(10);
+        });
+
+        modelBuilder.Entity<UserAuthInfo>(entity =>
+        {
+            entity.HasKey(e => e.Act);
+
+            entity.ToTable("userAuthInfo", tb => tb.HasTrigger("SetExpiredAt"));
+
+            entity.HasIndex(e => e.Act, "UQ__userAuth__DE50FEF7ED0014B8").IsUnique();
+
+            entity.Property(e => e.Act)
+                .HasMaxLength(15)
+                .IsUnicode(false)
+                .IsFixedLength()
+                .HasColumnName("act");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("createdAt");
+            entity.Property(e => e.Pwd)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .IsFixedLength()
+                .HasColumnName("pwd");
+            entity.Property(e => e.PwdExpired)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("pwdExpired");
+            entity.Property(e => e.Usrlevl)
+                .HasDefaultValueSql("((0))")
+                .HasColumnName("usrlevl");
         });
 
         OnModelCreatingPartial(modelBuilder);
