@@ -12,6 +12,23 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<DbFootballChciasContext>(options =>
        options.UseSqlServer(builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING")));
 builder.Services.AddDataProtection();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder
+            .AllowAnyOrigin() // 允許任何來源
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+    //options.AddDefaultPolicy(builder =>
+    //{
+    //    builder
+    //        .WithOrigins("http://localhost:5173", "https://localhost:44300") // 只允許這兩個來源
+    //        .AllowAnyMethod()
+    //        .AllowAnyHeader();
+    //});
+});
 
 var app = builder.Build();
 
@@ -37,5 +54,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseCors();
 
 app.Run();
