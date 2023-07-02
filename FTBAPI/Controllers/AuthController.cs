@@ -15,8 +15,8 @@ namespace FTBAPI.Controllers
         IDataProtector _protector;
         public struct LoginInfo
         {
-            public string account { get; set; }
-            public string password { get; set; }
+            public string act { get; set; }
+            public string pwd { get; set; }
         }
 
         public AuthController(DbFootballChciasContext service, IDataProtectionProvider provider)
@@ -57,7 +57,7 @@ namespace FTBAPI.Controllers
             try
             {
                 LoginInfo oLogin = loginInfo;
-                UserAuthInfo oUser = _db.UserAuthInfos.Single(user => user.Act == oLogin.account);
+                UserAuthInfo oUser = _db.UserAuthInfos.Single(user => user.Act == oLogin.act);
 
                 if (oUser == null)
                 {
@@ -68,7 +68,7 @@ namespace FTBAPI.Controllers
 
                 string dbUsrPwd = _protector.Unprotect(oUser.Pwd.Trim());
 
-                if (dbUsrPwd == oLogin.password) {
+                if (dbUsrPwd == oLogin.pwd) {
                     resp = RespSuccessDoc.OK_COMMON;
                     string strJsonResp = JsonSerializer.Serialize(resp);
                     return strJsonResp;
