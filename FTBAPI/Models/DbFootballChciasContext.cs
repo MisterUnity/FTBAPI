@@ -58,21 +58,22 @@ public partial class DbFootballChciasContext : DbContext
 
             entity.ToTable("userAuthInfo", tb => tb.HasTrigger("SetExpiredAt"));
 
-            entity.HasIndex(e => e.Act, "UQ__userAuth__DE50FEF7ED0014B8").IsUnique();
+            entity.HasIndex(e => e.Act, "UQ__tmp_ms_x__DE50FEF7915889C4").IsUnique();
 
             entity.Property(e => e.Act)
                 .HasMaxLength(15)
                 .IsUnicode(false)
-                .IsFixedLength()
                 .HasColumnName("act");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("createdAt");
-            entity.Property(e => e.Pwd)
-                .HasMaxLength(255)
+            entity.Property(e => e.Name)
+                .HasMaxLength(15)
                 .IsUnicode(false)
-                .IsFixedLength()
+                .HasColumnName("name");
+            entity.Property(e => e.Pwd)
+                .IsUnicode(false)
                 .HasColumnName("pwd");
             entity.Property(e => e.PwdExpired)
                 .HasDefaultValueSql("(getdate())")

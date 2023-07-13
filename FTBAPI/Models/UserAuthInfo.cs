@@ -14,4 +14,6 @@ public partial class UserAuthInfo
     public DateTime? PwdExpired { get; set; }
 
     public DateTime? CreatedAt { get; set; }
+
+    public string? Name { get; set; }
 }

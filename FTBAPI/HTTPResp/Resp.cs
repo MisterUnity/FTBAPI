@@ -10,6 +10,7 @@ namespace FTBAPI.HTTPResp
         public int? StatusCode { get; set; }
         public string? StatusMessage { get; set; }
         public string? OtherMessage { get; set; }
+        public dynamic Data { get; set; }
     }
 
     class RespErrDoc
@@ -37,6 +38,12 @@ namespace FTBAPI.HTTPResp
             ErrorCode = "E0003",
             ErrorMessage = "Session 已過期"
         };
+        public static CommonRespBody ERR_NO_LOGIN = new CommonRespBody()
+        {
+            StatusCode = 0,
+            ErrorCode = "E0004",
+            ErrorMessage = "未登入"
+        };
     }
     class RespSuccessDoc
     {
@@ -45,6 +52,10 @@ namespace FTBAPI.HTTPResp
             StatusCode = 1,
             StatusMessage = "Normal end."
         };
+        public static CommonRespBody OK_ISLOGIN = new CommonRespBody()
+        {
+            StatusCode = 1,
+            StatusMessage = "Normal end."
+        };
     }
-
 }

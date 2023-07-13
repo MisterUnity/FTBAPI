@@ -1,4 +1,5 @@
 ﻿using FTBAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata;
@@ -9,19 +10,35 @@ namespace FTBAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PlayerController : ControllerBase
     {
         private readonly DbFootballChciasContext _db;
-        public PlayerController(DbFootballChciasContext service)
+        private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public PlayerController(
+            DbFootballChciasContext dbContext,
+            IConfiguration configuration, // 此項不須透過注入
+            IHttpContextAccessor httpContextAccessor
+        )
         {
-            _db = service;
+            _db = dbContext;
+            _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         // GET: api/<ValuesController>
         [HttpGet]
+        /*
+        //[Authorize(Roles = "Medium")]
+        //對應到登入時new Claim(ClaimTypes.Role, "Administrator")指定的角色權限
+        //可以在Program.cs 設定 option.AccessDeniedPath，表示沒有權限的話重新導向到特定網址
+        */
         public IEnumerable<Playerinfo> Get()
         {
             try {
+                // _httpContextAccessor.HttpContext.User.Claims => 可取得包含登入者相關資料的網路綜合資料
+                //Console.WriteLine(_httpContextAccessor.HttpContext.User);
                 return _db.Playerinfos.ToList();
             } catch(Exception ex) {
                 throw ex;
