@@ -52,10 +52,5 @@ namespace FTBAPI.HTTPResp
             StatusCode = 1,
             StatusMessage = "Normal end."
         };
-        public static CommonRespBody OK_ISLOGIN = new CommonRespBody()
-        {
-            StatusCode = 1,
-            StatusMessage = "Normal end."
-        };
     }
 }

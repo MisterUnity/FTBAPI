@@ -71,8 +71,8 @@ namespace FTBAPI.Controllers
             CommonRespBody resp;
             try
             {
-                string[] ayAllowHosts =  _configuration.GetSection("Authentication:AllowedHosts").Get<string[]>();
-                int iAtmpt = _configuration.GetValue<int>("Authentication:Attempts");
+                //string[] ayAllowHosts =  _configuration.GetSection("Authentication:AllowedHosts").Get<string[]>();
+                //int iAtmpt = _configuration.GetValue<int>("Authentication:Attempts");
 
                 LoginInfo oLogin = loginInfo;
                 var oUser = _db.UserAuthInfos.SingleOrDefault(user => user.Act == oLogin.act);
@@ -152,7 +152,7 @@ namespace FTBAPI.Controllers
                 clu.Email = "待開發欄位";
                 clu.Name = result[0].Name;
 
-                var resp = RespSuccessDoc.OK_ISLOGIN;
+                var resp = RespSuccessDoc.OK_COMMON;
                 resp.Data = clu;
                 return JsonSerializer.Serialize(resp);
             }
