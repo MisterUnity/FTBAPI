@@ -113,9 +113,7 @@ namespace FTBAPI.Controllers
             }
             catch (Exception ex)
             {
-                resp = RespErrDoc.ERR_SERVER;
-                //resp.OtherMessage= ex.Message;
-                string strJsonResp = JsonSerializer.Serialize(resp);
+                string strJsonResp = JsonSerializer.Serialize(RespErrDoc.ERR_ACC_OR_PWD);
                 return strJsonResp;
             }
         }

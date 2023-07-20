@@ -44,6 +44,12 @@ namespace FTBAPI.HTTPResp
             ErrorCode = "E0004",
             ErrorMessage = "未登入"
         };
+        public static CommonRespBody ERR_PARM_ERR = new CommonRespBody()
+        {
+            StatusCode = 0,
+            ErrorCode = "E0005",
+            ErrorMessage = "參數錯誤"
+        };
     }
     class RespSuccessDoc
     {

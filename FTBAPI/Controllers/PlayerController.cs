@@ -1,8 +1,15 @@
-﻿using FTBAPI.Models;
+﻿using Azure.Identity;
+using Azure.Storage.Blobs;
+using FTBAPI.Dtos;
+using FTBAPI.HTTPResp;
+using FTBAPI.HTTPResp.Models;
+using FTBAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+//using Newtonsoft.Json;
 using System.Reflection.Metadata;
+using System.Text.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -16,15 +23,18 @@ namespace FTBAPI.Controllers
         private readonly DbFootballChciasContext _db;
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IWebHostEnvironment _webHostEnvironment;
         public PlayerController(
             DbFootballChciasContext dbContext,
             IConfiguration configuration, // 此項不須透過注入
-            IHttpContextAccessor httpContextAccessor
+            IHttpContextAccessor httpContextAccessor,
+            IWebHostEnvironment webHostEnvironment
         )
         {
             _db = dbContext;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: api/<ValuesController>
@@ -99,7 +109,6 @@ namespace FTBAPI.Controllers
                 throw ex;
             }
         }
-
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
         public ActionResult<Playerinfo> Put(Guid id, [FromBody] Playerinfo oPlayerinfo)
@@ -139,6 +148,95 @@ namespace FTBAPI.Controllers
             var info = _db.Playerinfos.Single(player => player.Id == id);
             _db.Playerinfos.Remove(info);
             _db.SaveChanges();
+        }
+        [HttpPost("PostUpResource")]
+        public async Task<string> PostUpResource([FromForm] IFormCollection form)
+        {
+            try
+            {
+                string gender = form["gender"].ToString();
+                string[] genderOK = new string[] { "M", "F" };
+                if (!genderOK.Contains(gender))
+                {
+                    return JsonSerializer.Serialize(RespErrDoc.ERR_PARM_ERR);
+                }
+
+                //var result = form;
+                var file = form.Files["photo"];
+
+                Playerinfo oPlayerInfo = new Playerinfo();
+                oPlayerInfo.Name = form["name"].ToString();
+                oPlayerInfo.Gender = form["gender"].ToString();
+                oPlayerInfo.Brithday = "";
+                oPlayerInfo.Weight = form["weight"].ToString();
+                oPlayerInfo.Height = form["height"].ToString();
+                oPlayerInfo.Description = "";
+                oPlayerInfo.Seniority = -1;
+
+                Playerinfo player = _db.Playerinfos.SingleOrDefault(player => player.Name == oPlayerInfo.Name && player.Brithday == oPlayerInfo.Brithday);
+                
+                if (player != null)
+                {
+                    return JsonSerializer.Serialize(RespErrDoc.ERR_DATA_EXIST);
+                }
+
+                string url = await UploadFromBinaryDataAsync(file);
+                oPlayerInfo.Photo = url;
+                _db.Playerinfos.Add(oPlayerInfo);
+                _db.SaveChanges();
+
+                UploadOK uploadOK = new UploadOK();
+                uploadOK.Url = url;
+                uploadOK.Name = oPlayerInfo.Name;
+                RespSuccessDoc.OK_COMMON.Data = uploadOK;
+                return JsonSerializer.Serialize(RespSuccessDoc.OK_COMMON);
+            }
+            catch(Exception ex)
+            {
+                return JsonSerializer.Serialize(RespErrDoc.ERR_SERVER);
+            }
+        }
+        private async Task<string> UploadFromBinaryDataAsync(IFormFile file)
+        {
+            try
+            {
+                string connectionString = _configuration.GetConnectionString("AZURE_BLOB_STORAGE_CONNECTION_STRING");
+                string containerName = "ftb-web/PlayerPhotos";
+                var subdirectory = "PlayerPhotos"; // 子目录名称
+
+                if (file != null && file.Length > 0)
+                {
+                    //BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+                    BlobServiceClient blobServiceClient = new BlobServiceClient(
+                        new Uri(connectionString),
+                        new DefaultAzureCredential()
+                    );
+                
+                    BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+                    // 确保子目录存在
+                    //var subdirectoryClient = containerClient.GetBlobClient(subdirectory);
+                    //await subdirectoryClient.UploadAsync(new MemoryStream(), overwrite: true);
+
+                    string fileName = Path.GetFileName(file.FileName);
+                    // 在子目录中创建 BlobClient
+                    BlobClient blobClient = containerClient.GetBlobClient($"{subdirectory}/{fileName}");
+
+                    using (var stream = file.OpenReadStream())
+                    {
+                        await blobClient.UploadAsync(stream, true);
+                    }
+                    // Assuming you want to return the URL of the uploaded blob for reference
+                    return blobClient.Uri.AbsoluteUri;
+                }
+                else
+                {
+                    return "No file was selected for upload.";
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }
