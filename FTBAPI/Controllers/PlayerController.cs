@@ -210,7 +210,6 @@ namespace FTBAPI.Controllers
                 }
                 else
                 {
-                    //defaultCredential = new DefaultAzureCredential();
                     defaultCredential = new DefaultAzureCredential(new DefaultAzureCredentialOptions() { ManagedIdentityClientId = IdentityClientID });
                 }
                 string containerName = "ftb-web";
