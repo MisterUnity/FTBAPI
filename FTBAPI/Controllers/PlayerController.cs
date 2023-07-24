@@ -78,37 +78,37 @@ namespace FTBAPI.Controllers
         }
 
         // POST api/<ValuesController>
-        [HttpPost]
-        public ActionResult<Playerinfo> Post([FromBody] Playerinfo[] ayPlayerInfos)
-        {
-            try
-            {
-                using (var context = new DbFootballChciasContext())
-                {
-                    // seeding database
-                    for(int player = 0; player < ayPlayerInfos.Length; player++)
-                    {
-                        Playerinfo oCurPlyrInfo = ayPlayerInfos[player];
-                        if (!oCurPlyrInfo.Gender.GetType().Equals(typeof(string)))
-                        {
-                            return BadRequest("錯誤的性別型別");
-                        }
-                        else
-                        {
-                            if (oCurPlyrInfo.Gender.Length > 1) return BadRequest("錯誤的性別型別");
-                        }
-                        context.Playerinfos.Add(oCurPlyrInfo);
-                    }
-                    context.SaveChanges();
-                }
-                //return CreatedAtAction(nameof(Get), new { id = value.Id }, value);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        //[HttpPost]
+        //public ActionResult<Playerinfo> Post([FromBody] Playerinfo[] ayPlayerInfos)
+        //{
+        //    try
+        //    {
+        //        using (var context = new DbFootballChciasContext())
+        //        {
+        //            // seeding database
+        //            for(int player = 0; player < ayPlayerInfos.Length; player++)
+        //            {
+        //                Playerinfo oCurPlyrInfo = ayPlayerInfos[player];
+        //                if (!oCurPlyrInfo.Gender.GetType().Equals(typeof(string)))
+        //                {
+        //                    return BadRequest("錯誤的性別型別");
+        //                }
+        //                else
+        //                {
+        //                    if (oCurPlyrInfo.Gender.Length > 1) return BadRequest("錯誤的性別型別");
+        //                }
+        //                context.Playerinfos.Add(oCurPlyrInfo);
+        //            }
+        //            context.SaveChanges();
+        //        }
+        //        //return CreatedAtAction(nameof(Get), new { id = value.Id }, value);
+        //        return Ok();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
         public ActionResult<Playerinfo> Put(Guid id, [FromBody] Playerinfo oPlayerinfo)
@@ -149,7 +149,7 @@ namespace FTBAPI.Controllers
             _db.Playerinfos.Remove(info);
             _db.SaveChanges();
         }
-        [HttpPost("PostUpResource")]
+        [HttpPost("AddPlayer")]
         public async Task<string> PostUpResource([FromForm] IFormCollection form)
         {
             try
@@ -193,6 +193,7 @@ namespace FTBAPI.Controllers
             }
             catch(Exception ex)
             {
+                RespErrDoc.ERR_SERVER.ErrorMessage = ex.ToString();
                 return JsonSerializer.Serialize(RespErrDoc.ERR_SERVER);
             }
         }
@@ -201,21 +202,31 @@ namespace FTBAPI.Controllers
             try
             {
                 string connectionString = _configuration.GetConnectionString("AZURE_BLOB_STORAGE_CONNECTION_STRING");
-                string containerName = "ftb-web/PlayerPhotos";
+                string IdentityClientID = _configuration.GetConnectionString("IDENTITY_CLIENT_ID");
+                DefaultAzureCredential defaultCredential;
+                if (IdentityClientID == "")
+                {
+                    defaultCredential = new DefaultAzureCredential();
+                }
+                else
+                {
+                    //defaultCredential = new DefaultAzureCredential();
+                    defaultCredential = new DefaultAzureCredential(new DefaultAzureCredentialOptions() { ManagedIdentityClientId = IdentityClientID });
+                }
+                string containerName = "ftb-web";
                 var subdirectory = "PlayerPhotos"; // 子目录名称
 
                 if (file != null && file.Length > 0)
                 {
                     //BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
                     BlobServiceClient blobServiceClient = new BlobServiceClient(
-                        new Uri(connectionString),
-                        new DefaultAzureCredential()
-                    );
+                        new Uri(connectionString), defaultCredential);
                 
                     BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+                    await containerClient.CreateIfNotExistsAsync();
                     // 确保子目录存在
                     //var subdirectoryClient = containerClient.GetBlobClient(subdirectory);
-                    //await subdirectoryClient.UploadAsync(new MemoryStream(), overwrite: true);
+                    //await subdirectoryClient.UploadAsync(new MemoryStream(), overwrite: true); //不用執行，會抱錯
 
                     string fileName = Path.GetFileName(file.FileName);
                     // 在子目录中创建 BlobClient
