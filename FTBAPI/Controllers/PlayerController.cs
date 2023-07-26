@@ -204,9 +204,11 @@ namespace FTBAPI.Controllers
                 string connectionString = _configuration.GetConnectionString("AZURE_BLOB_STORAGE_CONNECTION_STRING");
                 string IdentityClientID = _configuration.GetConnectionString("IDENTITY_CLIENT_ID");
                 DefaultAzureCredential defaultCredential;
-                if (IdentityClientID == "")
+                
+                if (_webHostEnvironment.IsDevelopment())
                 {
                     defaultCredential = new DefaultAzureCredential();
+                    //defaultCredential = new DefaultAzureCredential(new DefaultAzureCredentialOptions() { ManagedIdentityClientId = IdentityClientID });
                 }
                 else
                 {
