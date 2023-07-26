@@ -7,6 +7,7 @@ using FTBAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SixLabors.ImageSharp.Formats.Jpeg;
 //using Newtonsoft.Json;
 using System.Reflection.Metadata;
 using System.Text.Json;
@@ -188,7 +189,7 @@ namespace FTBAPI.Controllers
                 UploadOK uploadOK = new UploadOK();
                 uploadOK.Url = url;
                 uploadOK.Name = oPlayerInfo.Name;
-                RespSuccessDoc.OK_COMMON.Data = uploadOK;
+                RespSuccessDoc.OK_COMMON.Result = uploadOK;
                 return JsonSerializer.Serialize(RespSuccessDoc.OK_COMMON);
             }
             catch(Exception ex)
@@ -205,6 +206,7 @@ namespace FTBAPI.Controllers
                 string IdentityClientID = _configuration.GetConnectionString("IDENTITY_CLIENT_ID");
                 DefaultAzureCredential defaultCredential;
                 
+
                 if (_webHostEnvironment.IsDevelopment())
                 {
                     defaultCredential = new DefaultAzureCredential();
@@ -231,12 +233,39 @@ namespace FTBAPI.Controllers
 
                     string fileName = Path.GetFileName(file.FileName);
                     // 在子目录中创建 BlobClient
-                    BlobClient blobClient = containerClient.GetBlobClient($"{subdirectory}/{fileName}");
+                    BlobClient blobClient = containerClient.GetBlobClient($"{subdirectory}/{fileName}.jpg");
 
-                    using (var stream = file.OpenReadStream())
+
+                    // 1. 从前端接收 Blob 图像并转换为 JPG 格式
+                    using (var inputStream = file.OpenReadStream())
                     {
-                        await blobClient.UploadAsync(stream, true);
+                        using (var outputStream = new MemoryStream())
+                        {
+                            using (Image image = Image.Load(inputStream))
+                            {
+                                image.Mutate(x => x.BackgroundColor(Color.White));
+                                image.Save(outputStream, new JpegEncoder());
+                            }
+
+                            outputStream.Position = 0;
+
+                            // 2. 上传转换后的 JPG 图像到 Azure Blob Storage
+                            //var connectionString = "YOUR_AZURE_BLOB_STORAGE_CONNECTION_STRING";
+                            //var containerName = "YOUR_CONTAINER_NAME";
+                            //var blobName = "converted-image.jpg"; // 在 Blob Storage 中保存的文件名
+
+                            //BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+                            //BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+                            //BlobClient blobClient = containerClient.GetBlobClient(blobName);
+
+                            await blobClient.UploadAsync(outputStream, true);
+                        }
                     }
+
+                    //using (var stream = file.OpenReadStream())
+                    //{
+                    //    await blobClient.UploadAsync(stream, true);
+                    //}
                     // Assuming you want to return the URL of the uploaded blob for reference
                     return blobClient.Uri.AbsoluteUri;
                 }

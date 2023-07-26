@@ -10,7 +10,7 @@ namespace FTBAPI.HTTPResp
         public int? StatusCode { get; set; }
         public string? StatusMessage { get; set; }
         public string? OtherMessage { get; set; }
-        public dynamic Data { get; set; }
+        public dynamic Result { get; set; }
     }
 
     class RespErrDoc

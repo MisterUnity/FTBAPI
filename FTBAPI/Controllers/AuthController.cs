@@ -151,7 +151,7 @@ namespace FTBAPI.Controllers
                 clu.Name = result[0].Name;
 
                 var resp = RespSuccessDoc.OK_COMMON;
-                resp.Data = clu;
+                resp.Result = clu;
                 return JsonSerializer.Serialize(resp);
             }
             return JsonSerializer.Serialize(RespErrDoc.ERR_NO_LOGIN);
