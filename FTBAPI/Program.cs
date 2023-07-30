@@ -41,6 +41,7 @@ builder.Services.AddCors(options =>
             "https://localhost",
             "https://localhost:3000",
             "https://ftb-api.azurewebsites.net"
+            "https://orange-coast-0b9a4f00f.3.azurestaticapps.net"
         )
         .SetIsOriginAllowed(_ => true)
         .AllowAnyHeader()
