@@ -50,6 +50,12 @@ namespace FTBAPI.HTTPResp
             ErrorCode = "E0005",
             ErrorMessage = "參數錯誤"
         };
+        public static CommonRespBody ERR_NO_DATA = new CommonRespBody()
+        {
+            StatusCode = 0,
+            ErrorCode = "E0006",
+            ErrorMessage = "無資料"
+        };
     }
     class RespSuccessDoc
     {

@@ -35,8 +35,7 @@ public partial class DbFootballChciasContext : DbContext
                 .HasColumnName("ID");
             entity.Property(e => e.Brithday)
                 .HasMaxLength(30)
-                .IsUnicode(false)
-                .IsFixedLength();
+                .IsUnicode(false);
             entity.Property(e => e.Description).HasMaxLength(600);
             entity.Property(e => e.Gender)
                 .HasMaxLength(1)
@@ -49,6 +48,7 @@ public partial class DbFootballChciasContext : DbContext
                 .HasMaxLength(500)
                 .IsUnicode(false);
             entity.Property(e => e.Position).HasMaxLength(10);
+            entity.Property(e => e.Team).HasMaxLength(10);
             entity.Property(e => e.Weight).HasMaxLength(10);
         });
 

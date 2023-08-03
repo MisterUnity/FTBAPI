@@ -25,9 +25,76 @@ namespace FTBAPI.Controllers
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        // 進攻資料欄位定義
+        private readonly ColumnName _offensiveCol1 = new ColumnName() { Field = "date", Header = "時間" };
+        private readonly ColumnName _offensiveCol2 = new ColumnName() { Field = "toShoot", Header = "射門次數" };
+        private readonly ColumnName _offensiveCol3 = new ColumnName() { Field = "cornerBall", Header = "角球" };
+        private readonly ColumnName _offensiveCol4 = new ColumnName() { Field = "goalKick", Header = "球門球" };
+        private readonly ColumnName _offensiveCol5 = new ColumnName() { Field = "header", Header = "頭球" };
+        private readonly ColumnName _offensiveCol6 = new ColumnName() { Field = "penaltyKick", Header = "點球" };
+        private readonly ColumnName _offensiveCol7 = new ColumnName() { Field = "freeKick", Header = "自由球" };
+        //防守資料欄位定義
+        private readonly ColumnName _defensiveCol1 = new ColumnName() { Field = "date", Header = "時間" };
+        private readonly ColumnName _defensiveCol2 = new ColumnName() { Field = "blockTackle", Header = "正面搶截" };
+        private readonly ColumnName _defensiveCol3 = new ColumnName() { Field = "slideTackle", Header = "鏟球" };
+        private readonly ColumnName _defensiveCol4 = new ColumnName() { Field = "toIntercept", Header = "截球" };
+        private readonly ColumnName _defensiveCol5 = new ColumnName() { Field = "bodyCheck", Header = "身體阻擋" };
+        private readonly ColumnName _defensiveCol6 = new ColumnName() { Field = "fairCharge", Header = "合理衝撞" };
+
+        private ColumnName[] _ofsColsDefault;
+        private ColumnName[] _dfsColsDefault;
+
         private class Player {
             public Guid ID { get; set; }
             public string Name { get; set; }
+        }
+        private class ColumnName
+        {
+            public string Field { get; set; }
+            public string Header { get; set; }
+        }
+        private class OffensiveDataContent
+        {
+            public string Date { get; set; }
+            public string ToShoot { get; set; }
+            public string CornerBall { get; set; }
+            public string GoalKick { get; set; }
+            public string Header { get; set; }
+            public string PenaltyKick { get; set; }
+            public string FreeKick { get; set; }
+        }
+        private class DefensiveDataContent
+        {
+            public string Date { get; set; }
+            public string BlockTackle { get; set; }
+            public string SlideTackle{ get; set; }
+            public string ToIntercept{ get; set; }
+            public string BodyCheck { get; set; }
+            public string FairCharge { get; set; }
+        }
+        private class OffensiveData
+        {
+            public ColumnName[] ColumnName { get; set; }
+            public OffensiveDataContent[] Data { get; set; }
+        }
+        private class DefensiveData
+        {
+            public ColumnName[] ColumnName { get; set; }
+            public DefensiveDataContent[] Data { get; set; }
+        }
+        private class PlayerData
+        {
+            public Guid ID { get; set; }
+            public string Name { get; set; }
+            public string Photo { get; set; }
+            public string Age { get; set; }
+            public string Height { get; set; }
+            public string Weight { get; set; }
+            public string Position { get; set; }
+            public string Team { get; set; }
+            public string Description { get; set; }
+            public OffensiveData OffensiveData { get; set; }
+            public DefensiveData DefensiveData { get; set; }
         }
         public PlayerController(
             DbFootballChciasContext dbContext,
@@ -40,6 +107,25 @@ namespace FTBAPI.Controllers
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _webHostEnvironment = webHostEnvironment;
+
+            _ofsColsDefault = new ColumnName[] {
+                _offensiveCol1,
+                _offensiveCol2,
+                _offensiveCol3,
+                _offensiveCol4,
+                _offensiveCol5,
+                _offensiveCol6,
+                _offensiveCol7,
+            };
+            _dfsColsDefault = new ColumnName[]
+            {
+                _defensiveCol1,
+                _defensiveCol2,
+                _defensiveCol3,
+                _defensiveCol4,
+                _defensiveCol5,
+                _defensiveCol6
+            };
         }
 
         // GET: api/<ValuesController>
@@ -73,18 +159,63 @@ namespace FTBAPI.Controllers
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public ActionResult<Playerinfo> Get(Guid id)
+        public string Get(Guid id)
         {
             try
             {
-                Playerinfo  player = _db.Playerinfos.Find(id);
+                Playerinfo player = _db.Playerinfos.Find(id);
+                PlayerData playerData = new PlayerData();
                 if (player == null)
                 {
-                    return NotFound();
+                    return JsonSerializer.Serialize(RespErrDoc.ERR_NO_DATA);
                 }
                 else
                 {
-                    return player;
+                    playerData.ID = player.Id;
+                    playerData.Name = player.Name;
+                    playerData.Photo = player.Photo;
+                    playerData.Age = player.Brithday;
+                    playerData.Height= player.Height;
+                    playerData.Weight= player.Weight;
+                    playerData.Position = player.Position;
+                    //playerData.Team = player.Team;
+                    playerData.Description = player.Description;
+
+                    playerData.OffensiveData = new OffensiveData();
+                    playerData.DefensiveData = new DefensiveData();
+                    playerData.OffensiveData.ColumnName = _ofsColsDefault;
+                    playerData.DefensiveData.ColumnName = _dfsColsDefault;
+
+                    //金工和防守資料暫時先寫死
+                    List<OffensiveDataContent> offensiveDataContents = new List<OffensiveDataContent>();
+                    List<DefensiveDataContent> defensiveDataContents = new List<DefensiveDataContent>();
+
+                    for (int i = 0; i < 20; i++)
+                    {
+                        offensiveDataContents.Add(new OffensiveDataContent()
+                        {
+                            Date = $"時間{i}",
+                            ToShoot = $"射門次數{i}",
+                            CornerBall = $"角球{i}",
+                            GoalKick = $"球門球{i}",
+                            Header = $"頭球{i}",
+                            PenaltyKick = $"點球{i}",
+                            FreeKick = $"自由球{i}"
+                        });
+                        defensiveDataContents.Add(new DefensiveDataContent()
+                        {
+                            Date = $"時間{i}",
+                            BlockTackle = $"正面搶截{i}",
+                            SlideTackle = $"鏟球{i}",
+                            ToIntercept = $"截球{i}",
+                            BodyCheck = $"身體阻擋{i}",
+                            FairCharge = $"合理衝撞{i}"
+                        });
+                    }
+
+                    playerData.OffensiveData.Data = offensiveDataContents.ToArray();
+                    playerData.DefensiveData.Data = defensiveDataContents.ToArray();
+                    return JsonSerializer.Serialize(playerData);
                 }
             }
             catch (Exception ex)
@@ -187,7 +318,6 @@ namespace FTBAPI.Controllers
                 oPlayerInfo.Weight = form["weight"].ToString();
                 oPlayerInfo.Height = form["height"].ToString();
                 oPlayerInfo.Description = "";
-                oPlayerInfo.Seniority = -1;
 
                 Playerinfo player = _db.Playerinfos.SingleOrDefault(player => player.Name == oPlayerInfo.Name && player.Brithday == oPlayerInfo.Brithday);
                 
