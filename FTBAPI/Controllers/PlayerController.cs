@@ -25,6 +25,10 @@ namespace FTBAPI.Controllers
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private class Player {
+            public Guid ID { get; set; }
+            public string Name { get; set; }
+        }
         public PlayerController(
             DbFootballChciasContext dbContext,
             IConfiguration configuration, // 此項不須透過注入
@@ -45,14 +49,25 @@ namespace FTBAPI.Controllers
         //對應到登入時new Claim(ClaimTypes.Role, "Administrator")指定的角色權限
         //可以在Program.cs 設定 option.AccessDeniedPath，表示沒有權限的話重新導向到特定網址
         */
-        public IEnumerable<Playerinfo> Get()
+        public string Get()
         {
             try {
                 // _httpContextAccessor.HttpContext.User.Claims => 可取得包含登入者相關資料的網路綜合資料
                 //Console.WriteLine(_httpContextAccessor.HttpContext.User);
-                return _db.Playerinfos.ToList();
+                CommonRespBody resp;
+                List<Playerinfo> listPlayerInfo = _db.Playerinfos.ToList();
+                List<Player> listPlayerList = new List<Player>();
+                listPlayerInfo.ForEach(player =>
+                {
+                    Player plyr = new Player() { ID = player.Id, Name = player.Name };
+                    listPlayerList.Add(plyr);
+                });
+
+                resp = RespSuccessDoc.OK_COMMON;
+                resp.Result = listPlayerList.ToArray();
+                return JsonSerializer.Serialize(resp);
             } catch(Exception ex) {
-                throw ex;
+                return JsonSerializer.Serialize(RespErrDoc.ERR_SERVER);
             }
         }
 

@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "jsl7PqCTPMkY+iIkX24NKQcCBdlMEB4/VcTqgvWTRQY=",
+  "Hash": "E/jeXK4yLw7zRnChsou5ndsfHB7xTy+joFsPn9j0DBk=",
   "Source": "FTBAPI",
   "BasePath": "_content/FTBAPI",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "FTBAPI\\wwwroot",
       "Source": "FTBAPI",
-      "ContentRoot": "E:\\repos\\FTBAPI\\FTBAPI\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\allen\\Desktop\\Unity\\FTBAPI\\FTBAPI\\wwwroot\\",
       "BasePath": "_content/FTBAPI",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "E:\\repos\\FTBAPI\\FTBAPI\\wwwroot\\index.html",
+      "Identity": "C:\\Users\\allen\\Desktop\\Unity\\FTBAPI\\FTBAPI\\wwwroot\\index.html",
       "SourceId": "FTBAPI",
       "SourceType": "Discovered",
-      "ContentRoot": "E:\\repos\\FTBAPI\\FTBAPI\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\allen\\Desktop\\Unity\\FTBAPI\\FTBAPI\\wwwroot\\",
       "BasePath": "_content/FTBAPI",
       "RelativePath": "index.html",
       "AssetKind": "All",
