@@ -26,20 +26,20 @@ namespace FTBAPI.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IWebHostEnvironment _webHostEnvironment;
         // 進攻資料欄位定義
-        private readonly ColumnName _offensiveCol1 = new ColumnName() { Field = "date", Header = "時間" };
-        private readonly ColumnName _offensiveCol2 = new ColumnName() { Field = "toShoot", Header = "射門次數" };
-        private readonly ColumnName _offensiveCol3 = new ColumnName() { Field = "cornerBall", Header = "角球" };
-        private readonly ColumnName _offensiveCol4 = new ColumnName() { Field = "goalKick", Header = "球門球" };
-        private readonly ColumnName _offensiveCol5 = new ColumnName() { Field = "header", Header = "頭球" };
-        private readonly ColumnName _offensiveCol6 = new ColumnName() { Field = "penaltyKick", Header = "點球" };
-        private readonly ColumnName _offensiveCol7 = new ColumnName() { Field = "freeKick", Header = "自由球" };
+        private readonly ColumnName _offensiveCol1 = new ColumnName() { Field = "Date", Header = "時間" };
+        private readonly ColumnName _offensiveCol2 = new ColumnName() { Field = "ToShoot", Header = "射門次數" };
+        private readonly ColumnName _offensiveCol3 = new ColumnName() { Field = "CornerBall", Header = "角球" };
+        private readonly ColumnName _offensiveCol4 = new ColumnName() { Field = "GoalKick", Header = "球門球" };
+        private readonly ColumnName _offensiveCol5 = new ColumnName() { Field = "Header", Header = "頭球" };
+        private readonly ColumnName _offensiveCol6 = new ColumnName() { Field = "PenaltyKick", Header = "點球" };
+        private readonly ColumnName _offensiveCol7 = new ColumnName() { Field = "FreeKick", Header = "自由球" };
         //防守資料欄位定義
-        private readonly ColumnName _defensiveCol1 = new ColumnName() { Field = "date", Header = "時間" };
-        private readonly ColumnName _defensiveCol2 = new ColumnName() { Field = "blockTackle", Header = "正面搶截" };
-        private readonly ColumnName _defensiveCol3 = new ColumnName() { Field = "slideTackle", Header = "鏟球" };
-        private readonly ColumnName _defensiveCol4 = new ColumnName() { Field = "toIntercept", Header = "截球" };
-        private readonly ColumnName _defensiveCol5 = new ColumnName() { Field = "bodyCheck", Header = "身體阻擋" };
-        private readonly ColumnName _defensiveCol6 = new ColumnName() { Field = "fairCharge", Header = "合理衝撞" };
+        private readonly ColumnName _defensiveCol1 = new ColumnName() { Field = "Date", Header = "時間" };
+        private readonly ColumnName _defensiveCol2 = new ColumnName() { Field = "BlockTackle", Header = "正面搶截" };
+        private readonly ColumnName _defensiveCol3 = new ColumnName() { Field = "SlideTackle", Header = "鏟球" };
+        private readonly ColumnName _defensiveCol4 = new ColumnName() { Field = "ToIntercept", Header = "截球" };
+        private readonly ColumnName _defensiveCol5 = new ColumnName() { Field = "BodyCheck", Header = "身體阻擋" };
+        private readonly ColumnName _defensiveCol6 = new ColumnName() { Field = "FairCharge", Header = "合理衝撞" };
 
         private ColumnName[] _ofsColsDefault;
         private ColumnName[] _dfsColsDefault;
