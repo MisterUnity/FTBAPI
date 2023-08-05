@@ -215,7 +215,10 @@ namespace FTBAPI.Controllers
 
                     playerData.OffensiveData.Data = offensiveDataContents.ToArray();
                     playerData.DefensiveData.Data = defensiveDataContents.ToArray();
-                    return JsonSerializer.Serialize(playerData);
+
+                    CommonRespBody resp = RespSuccessDoc.OK_COMMON;
+                    resp.Result = playerData;
+                    return JsonSerializer.Serialize(resp);
                 }
             }
             catch (Exception ex)
