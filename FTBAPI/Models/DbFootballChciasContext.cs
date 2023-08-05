@@ -33,7 +33,7 @@ public partial class DbFootballChciasContext : DbContext
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("(newid())")
                 .HasColumnName("ID");
-            entity.Property(e => e.Brithday)
+            entity.Property(e => e.Age)
                 .HasMaxLength(30)
                 .IsUnicode(false);
             entity.Property(e => e.Description).HasMaxLength(600);
@@ -43,7 +43,6 @@ public partial class DbFootballChciasContext : DbContext
                 .IsFixedLength();
             entity.Property(e => e.Height).HasMaxLength(10);
             entity.Property(e => e.Name).HasMaxLength(10);
-            entity.Property(e => e.NextPosition).HasMaxLength(10);
             entity.Property(e => e.Photo)
                 .HasMaxLength(500)
                 .IsUnicode(false);
