@@ -174,7 +174,7 @@ namespace FTBAPI.Controllers
                     playerData.ID = player.Id;
                     playerData.Name = player.Name;
                     playerData.Photo = player.Photo;
-                    playerData.Age = player.Brithday;
+                    playerData.Age = player.Age;
                     playerData.Height= player.Height;
                     playerData.Weight= player.Weight;
                     playerData.Position = player.Position;
@@ -261,33 +261,21 @@ namespace FTBAPI.Controllers
         //}
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public ActionResult<Playerinfo> Put(Guid id, [FromBody] Playerinfo oPlayerinfo)
+        public string Put(Guid id, [FromBody] Playerinfo oPlayerinfo)
         {
             try
             {
                 if (id != oPlayerinfo.Id)
                 {
-                    return BadRequest();
+                    return JsonSerializer.Serialize(RespErrDoc.ERR_PARM_ERR);
                 }
-                //Playerinfo player = _db.Playerinfos.Find(id);//這個註解打開會抱錯
-                //if (player == null)
-                //{
-                //    return NotFound();
-                //}
 
                 _db.Entry(oPlayerinfo).State = EntityState.Modified;
                 _db.SaveChanges();
-                return NoContent();
+                return JsonSerializer.Serialize(RespSuccessDoc.OK_COMMON);
             } catch(Exception ex)
             {
-                if (!_db.Playerinfos.Any(e => e.Id == id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    return StatusCode(500, "存取發生錯誤");
-                }
+                return JsonSerializer.Serialize(RespErrDoc.ERR_SERVER);
             }
         }
 
@@ -317,12 +305,12 @@ namespace FTBAPI.Controllers
                 Playerinfo oPlayerInfo = new Playerinfo();
                 oPlayerInfo.Name = form["name"].ToString();
                 oPlayerInfo.Gender = form["gender"].ToString();
-                oPlayerInfo.Brithday = "";
+                oPlayerInfo.Age = form["age"].ToString();
                 oPlayerInfo.Weight = form["weight"].ToString();
                 oPlayerInfo.Height = form["height"].ToString();
                 oPlayerInfo.Description = "";
 
-                Playerinfo player = _db.Playerinfos.SingleOrDefault(player => player.Name == oPlayerInfo.Name && player.Brithday == oPlayerInfo.Brithday);
+                Playerinfo player = _db.Playerinfos.SingleOrDefault(player => player.Name == oPlayerInfo.Name && player.Age == oPlayerInfo.Age);
                 
                 if (player != null)
                 {
