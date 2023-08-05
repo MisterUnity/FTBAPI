@@ -1,8 +1,5 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.ComponentModel;
-//using System.ComponentModel.DataAnnotations;
-//using FTBAPI.Validations;
+﻿using System;
+using System.Collections.Generic;
 
 namespace FTBAPI.Models;
 
@@ -24,9 +21,7 @@ public partial class Playerinfo
 
     public string? Description { get; set; }
 
-    public string? NextPosition { get; set; }
-
-    public string? Brithday { get; set; }
+    public string? Age { get; set; }
 
     public string? Team { get; set; }
 }
