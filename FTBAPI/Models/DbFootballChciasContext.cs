@@ -15,6 +15,8 @@ public partial class DbFootballChciasContext : DbContext
     {
     }
 
+    public virtual DbSet<Playergamesinfo> Playergamesinfos { get; set; }
+
     public virtual DbSet<Playerinfo> Playerinfos { get; set; }
 
     public virtual DbSet<UserAuthInfo> UserAuthInfos { get; set; }
@@ -23,6 +25,22 @@ public partial class DbFootballChciasContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("Chinese_Taiwan_Stroke_CI_AS");
+
+        modelBuilder.Entity<Playergamesinfo>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("playergamesinfo");
+
+            entity.Property(e => e.Date).HasColumnType("date");
+            entity.Property(e => e.Id)
+                .HasMaxLength(80)
+                .HasColumnName("ID");
+            entity.Property(e => e.Name).HasMaxLength(10);
+            entity.Property(e => e.Opponent).HasMaxLength(10);
+            entity.Property(e => e.Place).HasMaxLength(10);
+            entity.Property(e => e.Team).HasMaxLength(10);
+        });
 
         modelBuilder.Entity<Playerinfo>(entity =>
         {

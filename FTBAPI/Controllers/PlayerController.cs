@@ -1,13 +1,14 @@
 ﻿using Azure.Identity;
 using Azure.Storage.Blobs;
-using FTBAPI.Dtos;
 using FTBAPI.HTTPResp;
 using FTBAPI.HTTPResp.Models;
 using FTBAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using System.Data;
 //using Newtonsoft.Json;
 using System.Reflection.Metadata;
 using System.Text.Json;
@@ -26,61 +27,74 @@ namespace FTBAPI.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IWebHostEnvironment _webHostEnvironment;
         // 進攻資料欄位定義
-        private readonly ColumnName _offensiveCol1 = new ColumnName() { Field = "Date", Header = "時間" };
-        private readonly ColumnName _offensiveCol2 = new ColumnName() { Field = "ToShoot", Header = "射門次數" };
-        private readonly ColumnName _offensiveCol3 = new ColumnName() { Field = "CornerBall", Header = "角球" };
-        private readonly ColumnName _offensiveCol4 = new ColumnName() { Field = "GoalKick", Header = "球門球" };
-        private readonly ColumnName _offensiveCol5 = new ColumnName() { Field = "Header", Header = "頭球" };
-        private readonly ColumnName _offensiveCol6 = new ColumnName() { Field = "PenaltyKick", Header = "點球" };
-        private readonly ColumnName _offensiveCol7 = new ColumnName() { Field = "FreeKick", Header = "自由球" };
+        private static readonly ColumnName[] _ofsColsDefault = new ColumnName[]
+        {
+            //new ColumnName() { Field = "Date", Header = "時間" },
+            new ColumnName() { Field = "ToShoot", Header = "射門" },
+            new ColumnName() { Field = "CornerBall", Header = "角球" },
+            //new ColumnName() { Field = "GoalKick", Header = "球門球" },
+            //new ColumnName() { Field = "Header", Header = "頭球" },
+            new ColumnName() { Field = "PenaltyKick", Header = "12碼罰球" },
+            new ColumnName() { Field = "FreeKick", Header = "自由球" },
+            new ColumnName() { Field = "Goal", Header = "得分" }
+        };
         //防守資料欄位定義
-        private readonly ColumnName _defensiveCol1 = new ColumnName() { Field = "Date", Header = "時間" };
-        private readonly ColumnName _defensiveCol2 = new ColumnName() { Field = "BlockTackle", Header = "正面搶截" };
-        private readonly ColumnName _defensiveCol3 = new ColumnName() { Field = "SlideTackle", Header = "鏟球" };
-        private readonly ColumnName _defensiveCol4 = new ColumnName() { Field = "ToIntercept", Header = "截球" };
-        private readonly ColumnName _defensiveCol5 = new ColumnName() { Field = "BodyCheck", Header = "身體阻擋" };
-        private readonly ColumnName _defensiveCol6 = new ColumnName() { Field = "FairCharge", Header = "合理衝撞" };
-
-        private ColumnName[] _ofsColsDefault;
-        private ColumnName[] _dfsColsDefault;
+        private static readonly ColumnName[] _dfsColsDefault = new ColumnName[]
+        {
+            //new ColumnName() { Field = "Date", Header = "時間" },
+            //new ColumnName() { Field = "BlockTackle", Header = "正面搶截" },
+            //new ColumnName() { Field = "SlideTackle", Header = "鏟球" },
+            //new ColumnName() { Field = "ToIntercept", Header = "截球" },
+            //new ColumnName() { Field = "BodyCheck", Header = "身體阻擋" },
+            //new ColumnName() { Field = "FairCharge", Header = "合理衝撞" }
+            new ColumnName() { Field = "HandBall", Header = "手球" },
+            new ColumnName() { Field = "Offside", Header = "越線" },
+            new ColumnName() { Field = "TechnicalFoul", Header = "技術性犯規" },
+            new ColumnName() { Field = "YellowCard", Header = "黃牌" },
+            new ColumnName() { Field = "RedCard", Header = "紅牌" }
+        };
 
         private class Player {
             public Guid ID { get; set; }
             public string Name { get; set; }
+            public string Team { get; set; }
         }
         private class ColumnName
         {
             public string Field { get; set; }
             public string Header { get; set; }
         }
-        private class OffensiveDataContent
-        {
-            public string Date { get; set; }
-            public string ToShoot { get; set; }
-            public string CornerBall { get; set; }
-            public string GoalKick { get; set; }
-            public string Header { get; set; }
-            public string PenaltyKick { get; set; }
-            public string FreeKick { get; set; }
-        }
-        private class DefensiveDataContent
-        {
-            public string Date { get; set; }
-            public string BlockTackle { get; set; }
-            public string SlideTackle{ get; set; }
-            public string ToIntercept{ get; set; }
-            public string BodyCheck { get; set; }
-            public string FairCharge { get; set; }
-        }
         private class OffensiveData
         {
-            public ColumnName[] ColumnName { get; set; }
-            public OffensiveDataContent[] Data { get; set; }
+            public string ToShoot { get; set; }
+            public string CornerBall { get; set; }
+            public string PenaltyKick { get; set; }
+            public string FreeKick { get; set; }
+            public string Goal { get; set; }
         }
         private class DefensiveData
         {
-            public ColumnName[] ColumnName { get; set; }
-            public DefensiveDataContent[] Data { get; set; }
+            public string HandBall { get; set; }
+            public string Offside { get; set; }
+            public string TechnicalFoul { get; set; }
+            public string YellowCard { get; set; }
+            public string RedCard { get; set; }
+        }
+        private class GameData
+        {
+            public ColumnName[] OffColumns = _ofsColsDefault;
+            public ColumnName[] DefColumns = _dfsColsDefault;
+            public GameHistory[] Data { get; set; }
+        }
+        private class GameHistory
+        {
+            public string Date { get; set; }
+            public string Team { get; set; } // 所屬隊伍
+            public string Opponent { get; set; } // 對手
+            public string Place { get; set; } // 所屬隊伍
+            public int IsHome { get; set; } // 所屬隊伍
+            public DefensiveData DefensiveData { get; set; }
+            public OffensiveData OffensiveData { get; set; }
         }
         private class PlayerData
         {
@@ -93,8 +107,7 @@ namespace FTBAPI.Controllers
             public string Position { get; set; }
             public string Team { get; set; }
             public string Description { get; set; }
-            public OffensiveData OffensiveData { get; set; }
-            public DefensiveData DefensiveData { get; set; }
+            public GameData GameHistory { get; set; }
         }
         public PlayerController(
             DbFootballChciasContext dbContext,
@@ -107,25 +120,6 @@ namespace FTBAPI.Controllers
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _webHostEnvironment = webHostEnvironment;
-
-            _ofsColsDefault = new ColumnName[] {
-                _offensiveCol1,
-                _offensiveCol2,
-                _offensiveCol3,
-                _offensiveCol4,
-                _offensiveCol5,
-                _offensiveCol6,
-                _offensiveCol7,
-            };
-            _dfsColsDefault = new ColumnName[]
-            {
-                _defensiveCol1,
-                _defensiveCol2,
-                _defensiveCol3,
-                _defensiveCol4,
-                _defensiveCol5,
-                _defensiveCol6
-            };
         }
 
         // GET: api/<ValuesController>
@@ -145,7 +139,7 @@ namespace FTBAPI.Controllers
                 List<Player> listPlayerList = new List<Player>();
                 listPlayerInfo.ForEach(player =>
                 {
-                    Player plyr = new Player() { ID = player.Id, Name = player.Name };
+                    Player plyr = new Player() { ID = player.Id, Name = player.Name, Team = player.Team };
                     listPlayerList.Add(plyr);
                 });
 
@@ -156,8 +150,7 @@ namespace FTBAPI.Controllers
                 return JsonSerializer.Serialize(RespErrDoc.ERR_SERVER);
             }
         }
-
-        // GET api/<ValuesController>/5
+        
         [HttpGet("{id}")]
         public string Get(Guid id)
         {
@@ -181,40 +174,41 @@ namespace FTBAPI.Controllers
                     //playerData.Team = player.Team;
                     playerData.Description = player.Description;
 
-                    playerData.OffensiveData = new OffensiveData();
-                    playerData.DefensiveData = new DefensiveData();
-                    playerData.OffensiveData.ColumnName = _ofsColsDefault;
-                    playerData.DefensiveData.ColumnName = _dfsColsDefault;
+                    var playerGameInfo = from rows in _db.Playergamesinfos
+                                     where rows.Id == id.ToString()
+                                     select rows;
 
-                    //金工和防守資料暫時先寫死
-                    List<OffensiveDataContent> offensiveDataContents = new List<OffensiveDataContent>();
-                    List<DefensiveDataContent> defensiveDataContents = new List<DefensiveDataContent>();
-
-                    for (int i = 0; i < 20; i++)
+                    if (playerGameInfo != null)
                     {
-                        offensiveDataContents.Add(new OffensiveDataContent()
-                        {
-                            Date = $"時間{i}",
-                            ToShoot = $"射門次數{i}",
-                            CornerBall = $"角球{i}",
-                            GoalKick = $"球門球{i}",
-                            Header = $"頭球{i}",
-                            PenaltyKick = $"點球{i}",
-                            FreeKick = $"自由球{i}"
-                        });
-                        defensiveDataContents.Add(new DefensiveDataContent()
-                        {
-                            Date = $"時間{i}",
-                            BlockTackle = $"正面搶截{i}",
-                            SlideTackle = $"鏟球{i}",
-                            ToIntercept = $"截球{i}",
-                            BodyCheck = $"身體阻擋{i}",
-                            FairCharge = $"合理衝撞{i}"
-                        });
-                    }
+                        List<Playergamesinfo> playergamesinfos = playerGameInfo.ToList();
+                        playerData.GameHistory = new GameData();
+                        playerData.GameHistory.Data = new GameHistory[playergamesinfos.Count];
 
-                    playerData.OffensiveData.Data = offensiveDataContents.ToArray();
-                    playerData.DefensiveData.Data = defensiveDataContents.ToArray();
+                        for (int i = 0; i < playergamesinfos.Count; i++)
+                        {
+                            playerData.GameHistory.Data[i] = new GameHistory();
+                            playerData.GameHistory.Data[i].Date = playergamesinfos[i].Date.ToString("yyyy-MM-dd");
+                            playerData.GameHistory.Data[i].Team = playergamesinfos[i].Team;
+                            playerData.GameHistory.Data[i].Opponent = playergamesinfos[i].Opponent;
+                            playerData.GameHistory.Data[i].IsHome = playergamesinfos[i].IsHome;
+                            playerData.GameHistory.Data[i].Place = playergamesinfos[i].Place;
+                            // 進攻數據讀取
+                            playerData.GameHistory.Data[i].OffensiveData = new OffensiveData();
+                            playerData.GameHistory.Data[i].OffensiveData.Goal = playergamesinfos[i].Goal.ToString();
+                            playerData.GameHistory.Data[i].OffensiveData.ToShoot = playergamesinfos[i].Goal.ToString();
+                            playerData.GameHistory.Data[i].OffensiveData.PenaltyKick = playergamesinfos[i].PenaltyKick.ToString();
+                            playerData.GameHistory.Data[i].OffensiveData.FreeKick = playergamesinfos[i].FreeKick.ToString();
+                            playerData.GameHistory.Data[i].OffensiveData.CornerBall = playergamesinfos[i].CornerBall.ToString();
+
+                            // 防守數據讀取
+                            playerData.GameHistory.Data[i].DefensiveData = new DefensiveData();
+                            playerData.GameHistory.Data[i].DefensiveData.TechnicalFoul = playergamesinfos[i].TechnicalFoul.ToString();
+                            playerData.GameHistory.Data[i].DefensiveData.Offside = playergamesinfos[i].Offside.ToString();
+                            playerData.GameHistory.Data[i].DefensiveData.HandBall = playergamesinfos[i].HandBall.ToString();
+                            playerData.GameHistory.Data[i].DefensiveData.YellowCard = playergamesinfos[i].YellowCard.ToString();
+                            playerData.GameHistory.Data[i].DefensiveData.RedCard = playergamesinfos[i].RedCard.ToString();
+                        }
+                    }
 
                     CommonRespBody resp = RespSuccessDoc.OK_COMMON;
                     resp.Result = playerData;
@@ -226,40 +220,7 @@ namespace FTBAPI.Controllers
                 throw ex;
             }
         }
-
-        // POST api/<ValuesController>
-        //[HttpPost]
-        //public ActionResult<Playerinfo> Post([FromBody] Playerinfo[] ayPlayerInfos)
-        //{
-        //    try
-        //    {
-        //        using (var context = new DbFootballChciasContext())
-        //        {
-        //            // seeding database
-        //            for(int player = 0; player < ayPlayerInfos.Length; player++)
-        //            {
-        //                Playerinfo oCurPlyrInfo = ayPlayerInfos[player];
-        //                if (!oCurPlyrInfo.Gender.GetType().Equals(typeof(string)))
-        //                {
-        //                    return BadRequest("錯誤的性別型別");
-        //                }
-        //                else
-        //                {
-        //                    if (oCurPlyrInfo.Gender.Length > 1) return BadRequest("錯誤的性別型別");
-        //                }
-        //                context.Playerinfos.Add(oCurPlyrInfo);
-        //            }
-        //            context.SaveChanges();
-        //        }
-        //        //return CreatedAtAction(nameof(Get), new { id = value.Id }, value);
-        //        return Ok();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
-        // PUT api/<ValuesController>/5
+        
         [HttpPut("{id}")]
         public string Put(Guid id, [FromBody] Playerinfo oPlayerinfo)
         {
@@ -269,7 +230,6 @@ namespace FTBAPI.Controllers
                 {
                     return JsonSerializer.Serialize(RespErrDoc.ERR_PARM_ERR);
                 }
-
                 _db.Entry(oPlayerinfo).State = EntityState.Modified;
                 _db.SaveChanges();
                 return JsonSerializer.Serialize(RespSuccessDoc.OK_COMMON);
@@ -281,14 +241,23 @@ namespace FTBAPI.Controllers
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public void Delete(Guid id)
+        public string Delete(Guid id)
         {
-            var info = _db.Playerinfos.Single(player => player.Id == id);
-            _db.Playerinfos.Remove(info);
-            _db.SaveChanges();
+            try
+            {
+                var info = _db.Playerinfos.Single(player => player.Id == id);
+                _db.Playerinfos.Remove(info);
+                _db.SaveChanges();
+                return JsonSerializer.Serialize(RespSuccessDoc.OK_COMMON);
+            }
+            catch
+            {
+                return JsonSerializer.Serialize(RespErrDoc.ERR_SERVER);
+            }
         }
+
         [HttpPost("AddPlayer")]
-        public async Task<string> PostUpResource([FromForm] IFormCollection form)
+        public async Task<string> Post([FromForm] IFormCollection form)
         {
             try
             {
@@ -413,6 +382,82 @@ namespace FTBAPI.Controllers
             catch (Exception ex)
             {
                 throw ex;
+            }
+        }
+        [HttpPost("AddGameRecord")]
+        public string AddGameRecord([FromBody] Playergamesinfo[] playergamesinfo)
+        {
+            try {
+
+                string connectionString = _configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
+                //SqlConnection connection = new SqlConnection(connectionString);
+                string query = "SELECT * FROM PLAYERINFO WHERE NAME = @Value1 AND ID = @Value2";
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    for (int i = 0; i < playergamesinfo.Length; i++)
+                    {
+                        SqlCommand command = new SqlCommand(query, connection);
+                        command.Parameters.AddWithValue("@Value1", playergamesinfo[i].Name); // 替换为实际的值
+                        command.Parameters.AddWithValue("@Value2", playergamesinfo[i].Id); // 替换为实际的值
+
+                        SqlDataAdapter adapter = new SqlDataAdapter(command);
+                        DataTable dataTable = new DataTable();
+                        adapter.Fill(dataTable);
+
+                        if (dataTable.Rows.Count == 0)
+                        {
+                            CommonRespBody resp = RespErrDoc.ERR_PARM_ERR;
+                            resp.OtherMessage = $"傳入的 ID ({playergamesinfo[i].Id}) 與 姓名({playergamesinfo[i].Name})無法匹配，請確認參數!!";
+                            return JsonSerializer.Serialize(resp);
+                        }
+                        else
+                        {
+                            string insertQuery =    "INSERT INTO PLAYERGAMESINFO" +
+                                                    "(ID, Name, IsHome, Place, Date, Team, Opponent, Goal, ToShoot, PenaltyKick, FreeKick, CornerBall, HandBall, Offside, TechnicalFoul, YellowCard, RedCard)" +
+                                                    "VALUES" +
+                                                    "(@Value1, @Value2, @Value3, @Value4, @Value5, @Value6, @Value7, @Value8, @Value9, @Value10, @Value11, @Value12, @Value13, @Value14, @Value15, @Value16, @Value17)";
+                            SqlCommand commandIns = new SqlCommand(insertQuery, connection);
+                            commandIns.Parameters.AddWithValue("@Value1", playergamesinfo[i].Id);
+                            commandIns.Parameters.AddWithValue("@Value2", playergamesinfo[i].Name);
+                            commandIns.Parameters.AddWithValue("@Value3", playergamesinfo[i].IsHome);
+                            commandIns.Parameters.AddWithValue("@Value4", playergamesinfo[i].Place);
+                            commandIns.Parameters.AddWithValue("@Value5", playergamesinfo[i].Date);
+                            commandIns.Parameters.AddWithValue("@Value6", playergamesinfo[i].Team);
+                            commandIns.Parameters.AddWithValue("@Value7", playergamesinfo[i].Opponent);
+                            commandIns.Parameters.AddWithValue("@Value8", playergamesinfo[i].Goal);
+                            commandIns.Parameters.AddWithValue("@Value9", playergamesinfo[i].ToShoot);
+                            commandIns.Parameters.AddWithValue("@Value10", playergamesinfo[i].PenaltyKick);
+                            commandIns.Parameters.AddWithValue("@Value11", playergamesinfo[i].FreeKick);
+                            commandIns.Parameters.AddWithValue("@Value12", playergamesinfo[i].CornerBall);
+                            commandIns.Parameters.AddWithValue("@Value13", playergamesinfo[i].HandBall);
+                            commandIns.Parameters.AddWithValue("@Value14", playergamesinfo[i].Offside);
+                            commandIns.Parameters.AddWithValue("@Value15", playergamesinfo[i].TechnicalFoul);
+                            commandIns.Parameters.AddWithValue("@Value16", playergamesinfo[i].YellowCard);
+                            commandIns.Parameters.AddWithValue("@Value17", playergamesinfo[i].RedCard);
+                            int rowsAffected = commandIns.ExecuteNonQuery();
+                            if (rowsAffected > 0)
+                            {
+                                // 插入成功
+                                Console.WriteLine("Data inserted successfully.");
+                            }
+                            else
+                            {
+                                // 插入失败
+                                Console.WriteLine("Data insertion failed.");
+                                
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+                
+                return JsonSerializer.Serialize(RespSuccessDoc.OK_COMMON);
+            }
+            catch (Exception ex)
+            {
+                RespErrDoc.ERR_SERVER.ErrorMessage = ex.ToString();
+                return JsonSerializer.Serialize(RespErrDoc.ERR_SERVER);
             }
         }
     }
