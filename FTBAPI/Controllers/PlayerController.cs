@@ -82,8 +82,8 @@ namespace FTBAPI.Controllers
         }
         private class GameData
         {
-            public ColumnName[] OffColumns = _ofsColsDefault;
-            public ColumnName[] DefColumns = _dfsColsDefault;
+            public ColumnName[] OffColumns { get; set; }
+            public ColumnName[] DefColumns { get; set; }
             public GameHistory[] Data { get; set; }
         }
         private class GameHistory
@@ -182,6 +182,8 @@ namespace FTBAPI.Controllers
                     {
                         List<Playergamesinfo> playergamesinfos = playerGameInfo.ToList();
                         playerData.GameHistory = new GameData();
+                        playerData.GameHistory.DefColumns = _dfsColsDefault;
+                        playerData.GameHistory.OffColumns = _ofsColsDefault;
                         playerData.GameHistory.Data = new GameHistory[playergamesinfos.Count];
 
                         for (int i = 0; i < playergamesinfos.Count; i++)
