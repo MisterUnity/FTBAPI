@@ -279,6 +279,7 @@ namespace FTBAPI.Controllers
                 oPlayerInfo.Age = form["age"].ToString();
                 oPlayerInfo.Weight = form["weight"].ToString();
                 oPlayerInfo.Height = form["height"].ToString();
+                oPlayerInfo.Team = form["team"].ToString();
                 oPlayerInfo.Description = "";
 
                 Playerinfo player = _db.Playerinfos.SingleOrDefault(player => player.Name == oPlayerInfo.Name && player.Age == oPlayerInfo.Age);
