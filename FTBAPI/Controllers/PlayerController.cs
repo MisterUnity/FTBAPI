@@ -171,7 +171,7 @@ namespace FTBAPI.Controllers
                     playerData.Height= player.Height;
                     playerData.Weight= player.Weight;
                     playerData.Position = player.Position;
-                    //playerData.Team = player.Team;
+                    playerData.Team = player.Team;
                     playerData.Description = player.Description;
 
                     var playerGameInfo = from rows in _db.Playergamesinfos
@@ -280,6 +280,7 @@ namespace FTBAPI.Controllers
                 oPlayerInfo.Weight = form["weight"].ToString();
                 oPlayerInfo.Height = form["height"].ToString();
                 oPlayerInfo.Team = form["team"].ToString();
+                oPlayerInfo.Position = form["position"].ToString();
                 oPlayerInfo.Description = "";
 
                 Playerinfo player = _db.Playerinfos.SingleOrDefault(player => player.Name == oPlayerInfo.Name && player.Age == oPlayerInfo.Age);
