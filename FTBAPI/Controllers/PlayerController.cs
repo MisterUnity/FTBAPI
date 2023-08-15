@@ -131,21 +131,30 @@ namespace FTBAPI.Controllers
         */
         public string Get()
         {
-            try {
+            try
+            {
                 // _httpContextAccessor.HttpContext.User.Claims => 可取得包含登入者相關資料的網路綜合資料
                 //Console.WriteLine(_httpContextAccessor.HttpContext.User);
                 CommonRespBody resp;
                 List<Playerinfo> listPlayerInfo = _db.Playerinfos.ToList();
-                List<Player> listPlayerList = new List<Player>();
-                listPlayerInfo.ForEach(player =>
-                {
-                    Player plyr = new Player() { ID = player.Id, Name = player.Name, Team = player.Team };
-                    listPlayerList.Add(plyr);
-                });
 
-                resp = RespSuccessDoc.OK_COMMON;
-                resp.Result = listPlayerList.ToArray();
-                return JsonSerializer.Serialize(resp);
+                if (listPlayerInfo.Count > 0)
+                {
+                    List<Player> listPlayerList = new List<Player>();
+                    listPlayerInfo.ForEach(player =>
+                    {
+                        Player plyr = new Player() { ID = player.Id, Name = player.Name, Team = player.Team };
+                        listPlayerList.Add(plyr);
+                    });
+
+                    resp = RespSuccessDoc.OK_COMMON;
+                    resp.Result = listPlayerList.ToArray();
+                    return JsonSerializer.Serialize(resp);
+                }
+                else
+                {
+                    return JsonSerializer.Serialize(RespErrDoc.ERR_NO_DATA);
+                }
             } catch(Exception ex) {
                 return JsonSerializer.Serialize(RespErrDoc.ERR_SERVER);
             }
@@ -405,9 +414,13 @@ namespace FTBAPI.Controllers
                         command.Parameters.AddWithValue("@Value1", playergamesinfo[i].Name); // 替换为实际的值
                         command.Parameters.AddWithValue("@Value2", playergamesinfo[i].Id); // 替换为实际的值
 
-                        SqlDataAdapter adapter = new SqlDataAdapter(command);
+                        //SqlDataAdapter adapter = new SqlDataAdapter(command);
+                        //DataTable dataTable = new DataTable();
+                        //adapter.Fill(dataTable);
+
+                        SqlDataReader reader = command.ExecuteReader();
                         DataTable dataTable = new DataTable();
-                        adapter.Fill(dataTable);
+                        dataTable.Load(reader);
 
                         if (dataTable.Rows.Count == 0)
                         {
@@ -447,9 +460,8 @@ namespace FTBAPI.Controllers
                             }
                             else
                             {
-                                // 插入失败
+                                // 插入失败 
                                 Console.WriteLine("Data insertion failed.");
-                                
                             }
                         }
                     }
