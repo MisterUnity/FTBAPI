@@ -224,15 +224,36 @@ namespace FTBAPI.Controllers
         }
         
         [HttpPut("{id}")]
-        public string Put(Guid id, [FromBody] Playerinfo oPlayerinfo)
+        public async Task<string> Put(Guid id, [FromForm] IFormCollection form)
         {
             try
             {
-                if (id != oPlayerinfo.Id)
+                
+                if (id.ToString() != form["id"].ToString())
                 {
                     return JsonSerializer.Serialize(RespErrDoc.ERR_PARM_ERR);
                 }
-                _db.Entry(oPlayerinfo).State = EntityState.Modified;
+                Playerinfo oPlayerInfo = new Playerinfo();
+                oPlayerInfo.Id = id;
+                oPlayerInfo.Age = form["age"].ToString();
+                oPlayerInfo.Position = form["position"].ToString();
+                oPlayerInfo.Weight = form["weight"].ToString();
+                oPlayerInfo.Height = form["height"].ToString();
+                oPlayerInfo.Description = form["description"].ToString();
+                oPlayerInfo.Team = form["team"].ToString();
+
+                Playerinfo player = _db.Playerinfos.SingleOrDefault(player => player.Name == oPlayerInfo.Name && player.Age == oPlayerInfo.Age);
+
+                if (player != null)
+                {
+                    return JsonSerializer.Serialize(RespErrDoc.ERR_DATA_EXIST);
+                }
+
+                var file = form.Files["photo"];
+                string url = await UploadFromBinaryDataAsync(file);
+                oPlayerInfo.Photo = url;
+
+                _db.Entry(oPlayerInfo).State = EntityState.Modified;
                 _db.SaveChanges();
                 return JsonSerializer.Serialize(RespSuccessDoc.OK_COMMON);
             } catch(Exception ex)
