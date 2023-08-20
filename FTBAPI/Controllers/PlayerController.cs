@@ -102,6 +102,7 @@ namespace FTBAPI.Controllers
             public string Name { get; set; }
             public string Photo { get; set; }
             public string Age { get; set; }
+            public string gender { get; set; }
             public string Height { get; set; }
             public string Weight { get; set; }
             public string Position { get; set; }
@@ -182,6 +183,7 @@ namespace FTBAPI.Controllers
                     playerData.Position = player.Position;
                     playerData.Team = player.Team;
                     playerData.Description = player.Description;
+                    playerData.gender = player.Gender == "M" ? "男": "女";
 
                     var playerGameInfo = from rows in _db.Playergamesinfos
                                      where rows.Id == id.ToString()
@@ -242,28 +244,35 @@ namespace FTBAPI.Controllers
                 {
                     return JsonSerializer.Serialize(RespErrDoc.ERR_PARM_ERR);
                 }
-                Playerinfo oPlayerInfo = new Playerinfo();
-                oPlayerInfo.Id = id;
-                oPlayerInfo.Age = form["age"].ToString();
-                oPlayerInfo.Position = form["position"].ToString();
-                oPlayerInfo.Weight = form["weight"].ToString();
-                oPlayerInfo.Height = form["height"].ToString();
-                oPlayerInfo.Description = form["description"].ToString();
-                oPlayerInfo.Team = form["team"].ToString();
-                oPlayerInfo.Gender = form["gender"].ToString();
 
-                Playerinfo player = _db.Playerinfos.SingleOrDefault(player => player.Name == oPlayerInfo.Name && player.Age == oPlayerInfo.Age);
-
-                if (player != null)
+                string gender = form["gender"].ToString();
+                string[] genderOK = new string[] { "M", "F" };
+                string name = form["name"].ToString(), age = form["age"].ToString();
+                if (!genderOK.Contains(gender))
                 {
-                    return JsonSerializer.Serialize(RespErrDoc.ERR_DATA_EXIST);
+                    return JsonSerializer.Serialize(RespErrDoc.ERR_PARM_ERR);
+                }
+
+                Playerinfo player = _db.Playerinfos.SingleOrDefault(player => player.Name == name && player.Age == age);
+
+                if (player == null)
+                {
+                    return JsonSerializer.Serialize(RespErrDoc.ERR_NO_DATA);
                 }
 
                 var file = form.Files["photo"];
                 string url = await UploadFromBinaryDataAsync(file);
-                oPlayerInfo.Photo = url;
-
-                _db.Entry(oPlayerInfo).State = EntityState.Modified;
+                player.Photo = url;
+                player.Id = id;
+                player.Age = age;
+                player.Name = name;
+                player.Position = form["position"].ToString();
+                player.Weight = form["weight"].ToString();
+                player.Height = form["height"].ToString();
+                player.Description = form["description"].ToString();
+                player.Team = form["team"].ToString();
+                player.Gender = form["gender"].ToString();
+                _db.Entry(player).State = EntityState.Modified;
                 _db.SaveChanges();
                 return JsonSerializer.Serialize(RespSuccessDoc.OK_COMMON);
             } catch(Exception ex)
@@ -303,7 +312,7 @@ namespace FTBAPI.Controllers
 
                 //var result = form;
                 var file = form.Files["photo"];
-
+                
                 Playerinfo oPlayerInfo = new Playerinfo();
                 oPlayerInfo.Name = form["name"].ToString();
                 oPlayerInfo.Gender = form["gender"].ToString();
