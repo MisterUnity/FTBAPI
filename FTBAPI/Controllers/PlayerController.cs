@@ -102,7 +102,7 @@ namespace FTBAPI.Controllers
             public string Name { get; set; }
             public string Photo { get; set; }
             public string Age { get; set; }
-            public string gender { get; set; }
+            public string Gender { get; set; }
             public string Height { get; set; }
             public string Weight { get; set; }
             public string Position { get; set; }
@@ -183,7 +183,7 @@ namespace FTBAPI.Controllers
                     playerData.Position = player.Position;
                     playerData.Team = player.Team;
                     playerData.Description = player.Description;
-                    playerData.gender = player.Gender == "M" ? "男": "女";
+                    playerData.Gender = player.Gender == "M" ? "男": "女";
 
                     var playerGameInfo = from rows in _db.Playergamesinfos
                                      where rows.Id == id.ToString()
