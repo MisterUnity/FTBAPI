@@ -4,13 +4,16 @@ using FTBAPI.HTTPResp;
 using FTBAPI.HTTPResp.Models;
 using FTBAPI.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Primitives;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using System.Data;
 //using Newtonsoft.Json;
 using System.Reflection.Metadata;
+using System.Text;
 using System.Text.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -203,12 +206,12 @@ namespace FTBAPI.Controllers
                             playerData.GameHistory.Data[i].Date = playergamesinfos[i].Date.ToString("yyyy-MM-dd");
                             playerData.GameHistory.Data[i].Team = playergamesinfos[i].Team;
                             playerData.GameHistory.Data[i].Opponent = playergamesinfos[i].Opponent;
-                            playerData.GameHistory.Data[i].IsHome = playergamesinfos[i].IsHome;
+                            playerData.GameHistory.Data[i].IsHome = (int)playergamesinfos[i].IsHome;
                             playerData.GameHistory.Data[i].Place = playergamesinfos[i].Place;
                             // 進攻數據讀取
                             playerData.GameHistory.Data[i].OffensiveData = new OffensiveData();
                             playerData.GameHistory.Data[i].OffensiveData.Goal = playergamesinfos[i].Goal.ToString();
-                            playerData.GameHistory.Data[i].OffensiveData.ToShoot = playergamesinfos[i].Goal.ToString();
+                            playerData.GameHistory.Data[i].OffensiveData.ToShoot = playergamesinfos[i].ToShoot.ToString();
                             playerData.GameHistory.Data[i].OffensiveData.PenaltyKick = playergamesinfos[i].PenaltyKick.ToString();
                             playerData.GameHistory.Data[i].OffensiveData.FreeKick = playergamesinfos[i].FreeKick.ToString();
                             playerData.GameHistory.Data[i].OffensiveData.CornerBall = playergamesinfos[i].CornerBall.ToString();
@@ -499,6 +502,88 @@ namespace FTBAPI.Controllers
                     connection.Close();
                 }
                 
+                return JsonSerializer.Serialize(RespSuccessDoc.OK_COMMON);
+            }
+            catch (Exception ex)
+            {
+                RespErrDoc.ERR_SERVER.ErrorMessage = ex.ToString();
+                return JsonSerializer.Serialize(RespErrDoc.ERR_SERVER);
+            }
+        }
+        [HttpPatch("UpdateGameRecord/{id}")]
+        public string UpdateGameRecord(Guid id, [FromBody] string playergamesinfo)
+        {
+            try
+            {
+                Playergamesinfo playerGameInfo = JsonSerializer.Deserialize<Playergamesinfo>(playergamesinfo);
+
+
+                string connectionString = _configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
+                //string sql = "UPDATE PLAYERGAMESINFO SET ";
+                List<string> UpdateCols = new List<string>();
+                string sql = "UPDATE PLAYERGAMESINFO SET ";
+                bool bFirstFlg = true;
+                if (playerGameInfo.Goal != null)
+                {
+                    sql += $"Goal = '{playerGameInfo.Goal}',";
+                }
+                if (playerGameInfo.ToShoot != null)
+                {
+                    sql +=  $"ToShoot = '{playerGameInfo.ToShoot}',";
+                }
+                if (playerGameInfo.PenaltyKick != null)
+                {
+                    sql += $"PenaltyKick = '{playerGameInfo.PenaltyKick}',";
+                }
+                if (playerGameInfo.FreeKick != null)
+                {
+                    sql += $"FreeKick = '{playerGameInfo.FreeKick}',";
+                }
+                if (playerGameInfo.CornerBall != null)
+                {
+                    sql += $"CornerBall = '{playerGameInfo.CornerBall}',";
+                }
+                if (playerGameInfo.HandBall != null)
+                {
+                    sql += $"HandBall = '{playerGameInfo.HandBall}',";
+                }
+                if (playerGameInfo.Offside != null)
+                {
+                    sql += $"Offside = '{playerGameInfo.Offside}',";
+                }
+                if (playerGameInfo.TechnicalFoul != null)
+                {
+                    sql += $"TechnicalFoul = '{playerGameInfo.TechnicalFoul}',";
+                }
+                if (playerGameInfo.YellowCard != null)
+                {
+                    sql += $"YellowCard = '{playerGameInfo.YellowCard}',";
+                }
+                if (playerGameInfo.RedCard != null)
+                {
+                    sql += $"RedCard = '{playerGameInfo.RedCard}',";
+                }
+
+                sql = sql.Substring(0, sql.Length - 1);
+
+                sql += $" WHERE ID = '{id}' AND DATE = '{playerGameInfo.Date.ToString("yyyy-MM-dd")}' AND Opponent = '{playerGameInfo.Opponent}'";
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    SqlCommand commandIns = new SqlCommand(sql.ToString(), connection);
+                    int rowsAffected = commandIns.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        // 插入成功
+                        Console.WriteLine("Data inserted successfully.");
+                    }
+                    else
+                    {
+                        // 插入失败 
+                        Console.WriteLine("Data insertion failed.");
+                    }
+                }
+
                 return JsonSerializer.Serialize(RespSuccessDoc.OK_COMMON);
             }
             catch (Exception ex)
