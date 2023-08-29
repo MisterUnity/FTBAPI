@@ -520,9 +520,8 @@ namespace FTBAPI.Controllers
 
                 string connectionString = _configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
                 //string sql = "UPDATE PLAYERGAMESINFO SET ";
-                List<string> UpdateCols = new List<string>();
                 string sql = "UPDATE PLAYERGAMESINFO SET ";
-                bool bFirstFlg = true;
+                
                 if (playerGameInfo.Goal != null)
                 {
                     sql += $"Goal = '{playerGameInfo.Goal}',";
