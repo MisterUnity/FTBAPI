@@ -37,7 +37,8 @@ public partial class DbFootballChciasContext : DbContext
                 .HasColumnName("ID");
             entity.Property(e => e.Date).HasColumnType("datetime");
             entity.Property(e => e.Field).HasMaxLength(10);
-            entity.Property(e => e.Opponent).HasMaxLength(10);
+            entity.Property(e => e.Team1).HasMaxLength(10);
+            entity.Property(e => e.Team2).HasMaxLength(10);
         });
 
         modelBuilder.Entity<Playergamesinfo>(entity =>

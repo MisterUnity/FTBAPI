@@ -9,7 +9,11 @@ public partial class Gameschedule
 
     public string? Field { get; set; }
 
-    public string? Opponent { get; set; }
+    public string? Team2 { get; set; }
 
     public Guid Id { get; set; }
+
+    public string? Team1 { get; set; }
+
+    public int? IsHome { get; set; }
 }

@@ -34,7 +34,7 @@ namespace FTBAPI.Controllers
             try
             {
                 var schedule = (from rows in _db.Gameschedules
-                               where rows.Date == gameschedule.Date && rows.Field == gameschedule.Field && rows.Opponent == gameschedule.Opponent
+                               where rows.Date == gameschedule.Date && rows.Field == gameschedule.Field && rows.Team1 == gameschedule.Team2
                                select rows).SingleOrDefault();
                 
                 if (schedule != null)
