@@ -30,26 +30,33 @@ namespace FTBAPI.Controllers
             }
         }
         [HttpPost]
-        public string AddSchedule([FromBody] Gameschedule gameschedule) {
+        public string AddSchedule([FromBody] Gameschedule[] gameschedule) {
+            int i = 0;
             try
             {
-                var schedule = (from rows in _db.Gameschedules
-                               where rows.Date == gameschedule.Date && rows.Field == gameschedule.Field && rows.Team1 == gameschedule.Team2
-                               select rows).SingleOrDefault();
-                
-                if (schedule != null)
+                for (i = 0; i< gameschedule.Length; i++)
                 {
-                    CommonRespBody respBody = RespErrDoc.ERR_DATA_EXIST;
-                    respBody.ErrorMessage = "不可新增相同資料";
-                    return JsonSerializer.Serialize(respBody);
-                }
+                    var schedule = (from rows in _db.Gameschedules
+                                    where rows.Date == gameschedule[i].Date && rows.Field == gameschedule[i].Field && rows.Team1 == gameschedule[i].Team2
+                                    select rows).SingleOrDefault();
 
-                _db.Gameschedules.Add(gameschedule);
-                _db.SaveChanges();
+                    if (schedule != null)
+                    {
+                        CommonRespBody respBody = RespErrDoc.ERR_DATA_EXIST;
+                        respBody.ErrorMessage = "不可新增相同資料";
+                        return JsonSerializer.Serialize(respBody);
+                    }
+
+                    _db.Gameschedules.Add(gameschedule[i]);
+                    _db.SaveChanges();
+                }
+                
                 return JsonSerializer.Serialize(RespSuccessDoc.OK_COMMON);
             }
             catch (Exception e) {
-                return JsonSerializer.Serialize(RespErrDoc.ERR_SERVER);
+                CommonRespBody resp = RespErrDoc.ERR_SERVER;
+                resp.ErrorMessage = $"傳入的陣列第{i}筆發生錯誤";
+                return JsonSerializer.Serialize(resp);
             }
         }
         [HttpDelete]
