@@ -1,5 +1,6 @@
 ﻿using FTBAPI.HTTPResp;
 using FTBAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
@@ -16,6 +17,7 @@ namespace FTBAPI.Controllers
             _db = dbContext;
         }
         [HttpGet]
+        [AllowAnonymous]
         public string GetAllSchedule()
         {
             try
