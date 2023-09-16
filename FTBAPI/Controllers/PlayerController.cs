@@ -511,11 +511,11 @@ namespace FTBAPI.Controllers
             }
         }
         [HttpPatch("UpdateGameRecord/{id}")]
-        public string UpdateGameRecord(Guid id, [FromBody] Playergamesinfo playerGameInfo)
+        public string UpdateGameRecord(Guid id, [FromBody] string playergamesinfo)
         {
             try
             {
-                // Playergamesinfo playerGameInfo = JsonSerializer.Deserialize<Playergamesinfo>(playergamesinfo);
+                Playergamesinfo playerGameInfo = JsonSerializer.Deserialize<Playergamesinfo>(playergamesinfo);
 
 
                 string connectionString = _configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
